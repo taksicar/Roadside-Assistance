@@ -9,6 +9,7 @@ class ImageAssets {
   static const String background = "$IMAGE_PATH/background.png";
 
   static const String done = "$IMAGE_PATH/done.png";
+  static const String flag = "$IMAGE_PATH/flag.png";
   static const String searchDriver = "$IMAGE_PATH/search-driver.png";
 
   static const String heavy = "$IMAGE_PATH/heavy.png";

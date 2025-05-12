@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:roadside_assistance/app/core/widgets/custom_snackbar_widget.dart';
+import 'package:roadside_assistance/app/routes/app_pages.dart';
 
 class AuthController extends GetxController {
   final phoneNumber = ''.obs;
@@ -75,9 +76,9 @@ class AuthController extends GetxController {
 
       await Future.delayed(const Duration(seconds: 2));
 
-      // Get.toNamed(Routes.VERIFICATION);
+      Get.toNamed(Routes.VERIFICATION);
 
-      _startResendCountdown();
+      // _startResendCountdown();
     } catch (e) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'خطأ',
@@ -102,7 +103,7 @@ class AuthController extends GetxController {
 
       await Future.delayed(const Duration(seconds: 2));
 
-      // Get.offAllNamed(Routes.HOME);
+      Get.offAllNamed(Routes.HOME);
     } catch (e) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'خطأ',

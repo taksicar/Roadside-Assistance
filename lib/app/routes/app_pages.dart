@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:roadside_assistance/app/modules/auth/views/verification_view.dart';
 import 'package:roadside_assistance/app/modules/profile/views/edit_profile_view.dart';
 
 import '../modules/auth/bindings/auth_binding.dart';
@@ -42,6 +43,10 @@ class AppPages {
       name: _Paths.EDIT_PROFILE,
       page: () => const EditProfileView(),
       binding: ProfileBinding(),
+    ),GetPage(
+      name: _Paths.VERIFICATION,
+      page: () => const VerificationView(),
+      binding: AuthBinding(),
     ),
   ];
 }
