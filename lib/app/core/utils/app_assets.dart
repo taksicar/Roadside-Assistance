@@ -14,6 +14,8 @@ class ImageAssets {
 
   static const String heavy = "$IMAGE_PATH/heavy.png";
   static const String light = "$IMAGE_PATH/light.png";
+  static const String service_bg = "$IMAGE_PATH/service-bg.png";
+
 
   static const String bucketTruck = "$IMAGE_PATH/bucketTruck.png";
   static const String flatbedTow = "$IMAGE_PATH/flatbedTow.png";
@@ -34,6 +36,13 @@ class IconAssets {
 
   static const String profile = "$ICONS_PATH/profile.svg";
   static const String search = "$ICONS_PATH/search.svg";
+  static const String arrowBack = "$ICONS_PATH/arrow.svg";
+  static const String chat = "$ICONS_PATH/chat.svg";
+  static const String delete = "$ICONS_PATH/delete.svg";
+  static const String logout = "$ICONS_PATH/logout.svg";
+  static const String setting = "$ICONS_PATH/setting.svg";
+  static const String support = "$ICONS_PATH/support.svg";
+  static const String user = "$ICONS_PATH/user.svg";
 }
 
 class FontConstants {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:roadside_assistance/app/core/widgets/custom_snackbar_widget.dart';
 import 'package:roadside_assistance/app/routes/app_pages.dart';
 
@@ -20,7 +21,7 @@ class ProfileController extends GetxController {
   final isLoading = false.obs;
 
   // Storage
-  // final _storage = GetStorage();
+  final _storage = GetStorage();
 
   @override
   void onInit() {
@@ -41,19 +42,19 @@ class ProfileController extends GetxController {
     try {
       // In a real app, this would load from your API
       // For now, let's load from storage or use defaults
-      // final storedData = _storage.read('user_data');
+      final storedData = _storage.read('user_data');
 
-      // if (storedData != null) {
-      //   userData.value = Map<String, dynamic>.from(storedData);
-      // } else {
-      //   // Default data for demo
-      //   userData.value = {
-      //     'name': 'أحمد محمود',
-      //     'email': 'ahmed@mail.com',
-      //     'phone': '+964 770078900',
-      //     'address': 'العراق، بغداد، المنصور، شارع 40',
-      //   };
-      // }
+      if (storedData != null) {
+        userData.value = Map<String, dynamic>.from(storedData);
+      } else {
+        // Default data for demo
+        userData.value = {
+          'name': 'أحمد محمود',
+          'email': 'ahmed@mail.com',
+          'phone': '+964 770078900',
+          'address': 'العراق، بغداد، المنصور، شارع 40',
+        };
+      }
 
       // Set values to controllers
       nameController.text = userData['name'] ?? '';
@@ -82,17 +83,17 @@ class ProfileController extends GetxController {
       final phone = phoneNumber.value;
       final address = addressController.text;
 
-      // // Update userData
+      // // // Update userData
       // userData.update((val) {
       //   val!['name'] = name;
       //   val['email'] = email;
       //   val['phone'] = phone.isEmpty ? userData['phone'] : phone;
       //   val['address'] = address;
-
+      //
       // });
 
       // Save to storage
-      // await _storage.write('user_data', userData);
+      await _storage.write('user_data', userData);
 
       // Simulate API call
       await Future.delayed(const Duration(seconds: 1));
@@ -119,19 +120,15 @@ class ProfileController extends GetxController {
   }
 
   void goToMessages() {
-    CustomSnackBar.showCustomToast(message: 'سيتم توفير هذه الخدمة قريبًا');
   }
 
   void goToSavedAddresses() {
-    CustomSnackBar.showCustomToast(message: 'سيتم توفير هذه الخدمة قريبًا');
   }
 
   void goToSettings() {
-    CustomSnackBar.showCustomToast(message: 'سيتم توفير هذه الخدمة قريبًا');
   }
 
   void goToHelp() {
-    CustomSnackBar.showCustomToast(message: 'سيتم توفير هذه الخدمة قريبًا');
   }
 
   // Logout
