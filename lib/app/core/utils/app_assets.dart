@@ -9,6 +9,7 @@ class ImageAssets {
   static const String background = "$IMAGE_PATH/background.png";
 
   static const String done = "$IMAGE_PATH/done.png";
+  static const String driver = "$IMAGE_PATH/driver.png";
   static const String flag = "$IMAGE_PATH/flag.png";
   static const String searchDriver = "$IMAGE_PATH/search-driver.png";
 
@@ -30,6 +31,7 @@ class ImageAssets {
 class IconAssets {
   static const String location = "$ICONS_PATH/location.svg";
   static const String mapPin = "$ICONS_PATH/map-pin.svg";
+  static const String myLocation = "$ICONS_PATH/my-location.svg";
 
   static const String logo = "$ICONS_PATH/logo.svg";
   static const String smallLogo = "$ICONS_PATH/small-logo.svg";
@@ -43,6 +45,7 @@ class IconAssets {
   static const String setting = "$ICONS_PATH/setting.svg";
   static const String support = "$ICONS_PATH/support.svg";
   static const String user = "$ICONS_PATH/user.svg";
+  static const String phone = "$ICONS_PATH/phone.svg";
 }
 
 class FontConstants {

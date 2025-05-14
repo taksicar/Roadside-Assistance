@@ -30,7 +30,7 @@ class ProfileView extends GetView<ProfileController> {
                   CustomText(
                     text: 'حساب تجريبي',
                     color: ColorManager.primary,
-                    fontSize: 16.sp,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                   ),
                   Container(
@@ -183,7 +183,7 @@ class ProfileView extends GetView<ProfileController> {
             Expanded(
               child: CustomText(
                 text: title,
-                fontSize: 15.sp,
+                fontSize: 16.sp,
                 // color: Colors.black87,
               ),
             ),
