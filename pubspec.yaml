@@ -45,7 +45,7 @@ dependencies:
   # Core
   get_storage: 
   get: ^4.7.2
-
+  google_maps_flutter: ^2.12.1
 
    # Utils
   flutter_screenutil: ^5.9.3

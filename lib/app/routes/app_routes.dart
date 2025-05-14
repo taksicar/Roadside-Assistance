@@ -15,6 +15,9 @@ abstract class Routes {
   static const SERVICE = _Paths.SERVICE;
   static const SERVICE_TRACKING = _Paths.SERVICE_TRACKING;
   static const EDIT_PROFILE = _Paths.EDIT_PROFILE;
+  static const LOCATION = _Paths.LOCATION;
+  static const SETTING = _Paths.SETTING;
+  static const MAP = _Paths.MAP;
 }
 
 abstract class _Paths {
@@ -29,4 +32,7 @@ abstract class _Paths {
   static const SERVICE = '/service';
   static const SERVICE_TRACKING = '/service_tracking';
   static const EDIT_PROFILE = '/edit-profile';
+  static const LOCATION = '/location';
+  static const SETTING = '/setting';
+  static const MAP = '/map';
 }

@@ -123,9 +123,13 @@ class ProfileController extends GetxController {
   }
 
   void goToSavedAddresses() {
+    Get.toNamed(Routes.LOCATION);
+
   }
 
   void goToSettings() {
+    Get.toNamed(Routes.SETTINGS);
+
   }
 
   void goToHelp() {

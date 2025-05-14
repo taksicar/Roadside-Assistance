@@ -7,6 +7,7 @@ class CustomButton extends StatelessWidget {
   final String? text;
   final VoidCallback? onPressed;
   final Color? color;
+  final Gradient? gradient;
   final Color? textColor;
   final double width;
   final double height;
@@ -19,7 +20,8 @@ class CustomButton extends StatelessWidget {
   const CustomButton({
     super.key,
     required this.text,
-    required this.color,
+    this.color,
+    this.gradient,
     required this.onPressed,
     this.width = double.infinity,
     this.height = 45,
@@ -29,7 +31,10 @@ class CustomButton extends StatelessWidget {
     this.borderRadius,
     this.textColor = ColorManager.white,
     this.boxShadow,
-  });
+  }) : assert(
+         color != null || gradient != null,
+         'Either color or gradient must be provided',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +45,8 @@ class CustomButton extends StatelessWidget {
         height: height.h,
         decoration: BoxDecoration(
           boxShadow: boxShadow,
-          color: color,
+          color: gradient == null ? color : null,
+          gradient: gradient,
           border: borderColor == null ? null : Border.all(color: borderColor!),
           borderRadius: borderRadius ?? BorderRadius.circular(12.r),
         ),
@@ -154,6 +160,52 @@ class CustomButton extends StatelessWidget {
         fontSize: fontSize.sp,
         fontWeight: FontWeight.bold,
       ),
+    );
+  }
+
+  // New factory method for gradient button
+  static Widget gradientBtn({
+    required String text,
+    required VoidCallback onPressed,
+    double width = double.infinity,
+    double height = 45,
+    double fontSize = 14,
+    bool isDisable = false,
+    BorderRadiusGeometry? borderRadius,
+    List<BoxShadow>? boxShadow,
+    Gradient? customGradient,
+    Color? textColor = ColorManager.white,
+  }) {
+    return CustomButton(
+      text: text,
+      onPressed: onPressed,
+      gradient:
+          customGradient ??
+          const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFF5856D6), // Lighter purple as shown in image
+              Color(0xFF2E2D70), // Darker purple as shown in image
+            ],
+          ),
+      boxShadow:
+          boxShadow ??
+          [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+      color: Colors.transparent,
+      textColor: textColor,
+      width: width,
+      height: height,
+      fontSize: fontSize,
+      isDisable: isDisable,
+      borderRadius: borderRadius,
+
     );
   }
 }

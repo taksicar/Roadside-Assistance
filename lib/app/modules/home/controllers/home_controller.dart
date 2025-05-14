@@ -78,7 +78,7 @@ class HomeController extends GetxController {
 
     switch (service.id) {
       case '1': // Flatbed Tow
-        Get.toNamed(Routes.SERVICE);
+        Get.toNamed(Routes.MAP);
         break;
       default:
         CustomSnackBar.showCustomToast(

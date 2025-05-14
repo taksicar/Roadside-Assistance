@@ -132,21 +132,24 @@ class HomeView extends GetView<HomeController> {
                       ),
                     )
                   else
-                    Container(
-                      margin: EdgeInsets.only(top: 20.h),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 40.w,
-                        vertical: 15.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ColorManager.primaryDark,
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: CustomText(
-                        text: 'دخول',
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    InkWell(
+                      onTap: () => Get.toNamed(Routes.MAP),
+                      child: Container(
+                        margin: EdgeInsets.only(top: 20.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 40.w,
+                          vertical: 15.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ColorManager.primaryDark,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: CustomText(
+                          text: 'دخول',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                 ],
