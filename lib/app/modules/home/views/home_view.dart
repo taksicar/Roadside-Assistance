@@ -89,41 +89,43 @@ class HomeView extends GetView<HomeController> {
         height: 130.h,
         margin: EdgeInsets.symmetric(horizontal: 6.w),
         decoration: BoxDecoration(
-          color: ColorManager.secondary.withOpacity50,
+          image: DecorationImage(image:AssetImage(ImageAssets.service_bg)),
+          // color: ColorManager.secondary.withOpacity50,
           // color: ColorManager.white,
+          
           borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.black.withOpacity(0.1),
+          //     blurRadius: 10,
+          //     offset: const Offset(0, 4),
+          //   ),
+          // ],
         ),
         child: Row(
           children: [
             // Service icon
             Container(
-              padding: EdgeInsets.all(12.r),
-              child: Image.asset(icon, fit: BoxFit.contain),
+              padding: EdgeInsets.symmetric(vertical: 8.h,horizontal: 12.w),
+              child: SvgPicture.asset(icon, fit: BoxFit.contain,width: 150.w,),
             ),
             Spacer(),
             // Title and status
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                // crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CustomText(
                     text: title,
-                    fontSize: 16,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
-                    color: ColorManager.textPrimary,
+                    color: ColorManager.white,
                   ),
                   if (!isAvailable)
                     Padding(
-                      padding: EdgeInsets.only(top: 20.h),
+                      padding: EdgeInsets.only(top: 30.h),
                       child: CustomText(
                         text: 'قريبا',
                         fontSize: 18.sp,
@@ -134,21 +136,24 @@ class HomeView extends GetView<HomeController> {
                   else
                     InkWell(
                       onTap: () => Get.toNamed(Routes.MAP),
-                      child: Container(
-                        margin: EdgeInsets.only(top: 20.h),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 40.w,
-                          vertical: 15.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ColorManager.primaryDark,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: CustomText(
-                          text: 'دخول',
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      child: Transform.translate(
+                        offset: Offset(0, 22.h),
+                        child: Container(
+                          // margin: EdgeInsets.only(top: 40.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 40.w,
+                            vertical: 15.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ColorManager.primaryDark,
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: CustomText(
+                            text: 'دخول',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),

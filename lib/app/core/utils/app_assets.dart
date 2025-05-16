@@ -13,6 +13,9 @@ class ImageAssets {
   static const String flag = "$IMAGE_PATH/flag.png";
   static const String searchDriver = "$IMAGE_PATH/search-driver.png";
 
+  static const String locationLogo = "$IMAGE_PATH/location_logo.png";
+  static const String LocationSign = "$IMAGE_PATH/location_sign.png";
+
   static const String heavy = "$IMAGE_PATH/heavy.png";
   static const String light = "$IMAGE_PATH/light.png";
   static const String service_bg = "$IMAGE_PATH/service-bg.png";
@@ -32,8 +35,17 @@ class IconAssets {
   static const String location = "$ICONS_PATH/location.svg";
   static const String mapPin = "$ICONS_PATH/map-pin.svg";
   static const String myLocation = "$ICONS_PATH/my-location.svg";
+  static const String locationSign = "$ICONS_PATH/location_sign.svg";
 
   static const String logo = "$ICONS_PATH/logo.svg";
+  static const String image1 = "$ICONS_PATH/image1.svg";
+  static const String image2 = "$ICONS_PATH/image2.svg";
+  static const String image3 = "$ICONS_PATH/image3.svg";
+  static const String image4 = "$ICONS_PATH/image4.svg";
+  static const String image5 = "$ICONS_PATH/image5.svg";
+  static const String image6 = "$ICONS_PATH/image6.svg";
+  static const String image7 = "$ICONS_PATH/image7.svg";
+
   static const String smallLogo = "$ICONS_PATH/small-logo.svg";
 
   static const String profile = "$ICONS_PATH/profile.svg";

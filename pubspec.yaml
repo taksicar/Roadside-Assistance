@@ -47,6 +47,7 @@ dependencies:
   get: ^4.7.2
   google_maps_flutter: ^2.12.1
   location: ^5.0.3
+  geocoding:
 
    # Utils
   flutter_screenutil: ^5.9.3

@@ -31,10 +31,10 @@ class SplashController extends GetxController {
   }
 
   void _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
     showSplashImage.value = true;
 
-    await Future.delayed(const Duration(milliseconds: 1500));
+    await Future.delayed(const Duration(milliseconds: 1000));
     showLogo.value = true;
 
     _navigationTimer = Timer(const Duration(seconds: 3), () {

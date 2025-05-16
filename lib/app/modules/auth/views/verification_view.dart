@@ -30,6 +30,16 @@ class VerificationView extends GetView<AuthController> {
                     image: AssetImage(ImageAssets.paint),
                     fit: BoxFit.cover,
                   ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      ColorManager.primaryDark,
+                      ColorManager.primaryLight,
+                      Colors.white,
+                    ],
+                    stops: const [0.0, 0.5, 0.5],
+                  ),
                 ),
               ),
             ],
@@ -90,17 +100,16 @@ class VerificationView extends GetView<AuthController> {
                       SizedBox(height: 32.h),
 
                       Obx(
-                        () => CustomButton(
-                          text: 'تأكيد',
-                          color: ColorManager.primary,
-                          onPressed:
-                              controller.isLoading.value
-                                  ? null
-                                  : () => controller.verifyOtp(),
-                          isDisable: controller.isLoading.value,
-                          height: 50,
-                          fontSize: 16,
-                          borderRadius: BorderRadius.circular(8.r),
+                        () => AbsorbPointer(
+                          absorbing: controller.isLoading.value,
+                          child: CustomButton.gradientBtn(
+                            text: 'تأكيد',
+                            onPressed: () => controller.verifyOtp(),
+                            isDisable: controller.isLoading.value,
+                            height: 50,
+                            fontSize: 16,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
                         ),
                       ),
                     ],
