@@ -36,6 +36,11 @@ class IconAssets {
   static const String mapPin = "$ICONS_PATH/map-pin.svg";
   static const String myLocation = "$ICONS_PATH/my-location.svg";
   static const String locationSign = "$ICONS_PATH/location_sign.svg";
+  static const String pin = "$ICONS_PATH/pin.svg";
+  static const String pin2 = "$ICONS_PATH/pin2.svg";
+
+  static const String heavy = "$ICONS_PATH/heavy.svg";
+  static const String light = "$ICONS_PATH/light.svg";
 
   static const String logo = "$ICONS_PATH/logo.svg";
   static const String image1 = "$ICONS_PATH/image1.svg";

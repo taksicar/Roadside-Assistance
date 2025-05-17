@@ -9,6 +9,7 @@ import 'package:roadside_assistance/app/modules/map/controllers/map_controller.d
 import 'package:roadside_assistance/app/modules/map/views/widgets/arrived_widget.dart';
 import 'package:roadside_assistance/app/modules/map/views/widgets/driver_on_way_widget.dart';
 import 'package:roadside_assistance/app/modules/map/views/widgets/location_selection_widget.dart';
+import 'package:roadside_assistance/app/modules/map/views/widgets/marker_widget.dart';
 import 'package:roadside_assistance/app/modules/map/views/widgets/search_driver_widget.dart';
 import 'package:roadside_assistance/app/modules/map/views/widgets/service_type_widget.dart';
 import 'package:roadside_assistance/app/routes/app_pages.dart';
@@ -20,80 +21,64 @@ class MapView extends GetView<MapController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Obx(
-        () => Stack(
+            () {
+              if (controller.isLocationLoading.value) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: ColorManager.primary,
+                  ),
+                );
+              }
+              return Stack(
           children: [
             // Google Map
             controller.tripStatus.value == TripStatus.searchingDriver
                 ? SizedBox()
                 : Obx(() {
-                  if (controller.isLocationLoading.value) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: ColorManager.primary,
-                      ),
-                    );
-                  }
+              if (controller.isLocationLoading.value) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: ColorManager.primary,
+                  ),
+                );
+              }
 
-                  return Obx(
+              return Obx(
                     () => GoogleMap(
-                      initialCameraPosition:
-                          controller.initialCameraPosition.value,
-                      markers: controller.markers,
-                      polylines: controller.polylines,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      zoomControlsEnabled: false,
-                      mapToolbarEnabled: false,
-                      compassEnabled: false,
-                      onMapCreated: (GoogleMapController mapController) {
-                        if (!controller.mapControllerCompleter.isCompleted) {
-                          controller.mapControllerCompleter.complete(
-                            mapController,
-                          );
-                          controller.isMapReady.value = true;
-                          print(
-                            'تم تهيئة الخريطة بنجاح!',
-                          ); // أضف هذا للتأكد من التنفيذ
-                        }
-                      },
+                  initialCameraPosition:
+                  controller.initialCameraPosition.value,
+                  markers: controller.markers,
+                  polylines: controller.polylines,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  mapToolbarEnabled: false,
+                  compassEnabled: false,
+                  onMapCreated: (GoogleMapController mapController) {
+                    if (!controller.mapControllerCompleter.isCompleted) {
+                      controller.mapControllerCompleter.complete(
+                        mapController,
+                      );
+                      controller.isMapReady.value = true;
+                      print('تم تهيئة الخريطة بنجاح!');
+                    }
+                  },
+                  // Add camera movement tracking for marker animation
+                  onCameraMove: controller.onCameraMove,
+                  onCameraIdle: controller.onCameraIdle,
+                  // Remove onTap handler as we'll use the center marker
+                ),
+              );
+            }),
 
-                      onTap: (LatLng position) async {
-                        // Allow tapping on map to set location points
-                        if (controller.tripStatus.value ==
-                                TripStatus.selectingLocation ||
-                            controller.tripStatus.value ==
-                                TripStatus.selectingDestination) {
-                          // الحصول على عنوان الموقع
-                          String locationAddress = await controller
-                              .getLocationAddress(position);
-
-                          if (controller.isPickUpSelected.value) {
-                            controller.pickupLocation.value = position;
-                            controller.pickupLocationText.value =
-                                locationAddress;
-                            controller.updatePickupMarker(position);
-                          } else {
-                            controller.destination.value = position;
-                            controller.destinationText.value = locationAddress;
-                            controller.updateDestinationMarker(position);
-                          }
-
-                          // Draw route if both points are set
-                          if (controller.pickupLocation.value != null &&
-                              controller.destination.value != null) {
-                            controller.drawRouteBetweenPickupAndDestination();
-                          }
-                        }
-                      },
-                    ),
-                  );
-                }),
+            // Center Marker (Fixed in the center of the screen)
+            _buildCenterMarker(),
 
             // Top Navigation
             _buildTopNavigation(),
 
             // Current Location Button
-            // _buildCurrentLocationButton(),
+            _buildCurrentLocationButton(),
 
             // UI Layers based on trip status
             Obx(() {
@@ -113,9 +98,29 @@ class MapView extends GetView<MapController> {
               }
             }),
           ],
-        ),
+        );
+            },
       ),
     );
+  }
+
+  // Add the center marker widget
+  Widget _buildCenterMarker() {
+    return Obx(() {
+      // Only show the center marker during location selection
+      if (controller.tripStatus.value == TripStatus.selectingLocation ||
+          controller.tripStatus.value == TripStatus.selectingDestination) {
+        return Center(
+          child: CenterMarkerWidget(
+            isPickup: controller.isPickUpSelected.value,
+            isMoving: controller.isCameraMoving.value,
+            liftHeight: controller.centerMarkerHeight.value,
+          ),
+        );
+      } else {
+        return const SizedBox.shrink();
+      }
+    });
   }
 
   Widget _buildTopNavigation() {
@@ -184,36 +189,36 @@ class MapView extends GetView<MapController> {
 
   Widget _buildCurrentLocationButton() {
     return (controller.tripStatus.value == TripStatus.selectingLocation ||
-            controller.tripStatus.value == TripStatus.selectingDestination ||
-            controller.tripStatus.value == TripStatus.selectingServiceType)
+        controller.tripStatus.value == TripStatus.selectingDestination ||
+        controller.tripStatus.value == TripStatus.selectingServiceType)
         ? Positioned(
-          bottom: 210.h,
-          right: 16.w,
-          child: Container(
-            decoration: BoxDecoration(
-              color: ColorManager.white,
-              border: Border.all(color: ColorManager.primary),
-              borderRadius: BorderRadius.all(Radius.circular(12.r)),
-              boxShadow: [
-                BoxShadow(
-                  color: ColorManager.black.withOpacity(0.12),
-                  offset: const Offset(0, 2),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-              ],
+      bottom: 210.h,
+      right: 16.w,
+      child: Container(
+        decoration: BoxDecoration(
+          color: ColorManager.white,
+          border: Border.all(color: ColorManager.primary),
+          borderRadius: BorderRadius.all(Radius.circular(12.r)),
+          boxShadow: [
+            BoxShadow(
+              color: ColorManager.black.withOpacity(0.12),
+              offset: const Offset(0, 2),
+              blurRadius: 12,
+              spreadRadius: 1,
             ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                IconAssets.myLocation,
-                height: 24.h,
-                width: 24.w,
-                color: Colors.indigo,
-              ),
-              onPressed: controller.goToCurrentLocation,
-            ),
+          ],
+        ),
+        child: IconButton(
+          icon: SvgPicture.asset(
+            IconAssets.myLocation,
+            height: 24.h,
+            width: 24.w,
+            color: Colors.indigo,
           ),
-        )
+          onPressed: controller.goToCurrentLocation,
+        ),
+      ),
+    )
         : SizedBox();
   }
 }

@@ -5,7 +5,12 @@ import 'package:roadside_assistance/app/core/utils/app_colors.dart';
 import 'package:roadside_assistance/app/modules/map/controllers/map_controller.dart';
 
 class LocationCardWidget extends GetView<MapController> {
-  const LocationCardWidget({Key? key}) : super(key: key);
+  final bool isEditable;
+
+  const LocationCardWidget({
+    Key? key,
+    this.isEditable = true,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +49,7 @@ class LocationCardWidget extends GetView<MapController> {
                   shape: BoxShape.circle,
                 ),
               ),
-              onTap: () => controller.toggleLocationSelection(true),
+              onTap: isEditable ? () => controller.toggleLocationSelection(true) : null,
             ),
 
           // Destination location
@@ -67,7 +72,7 @@ class LocationCardWidget extends GetView<MapController> {
                   shape: BoxShape.circle,
                 ),
               ),
-              onTap: () => controller.toggleLocationSelection(false),
+              onTap: isEditable ? () => controller.toggleLocationSelection(false) : null,
             ),
         ],
       ),

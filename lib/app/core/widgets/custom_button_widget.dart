@@ -166,7 +166,7 @@ class CustomButton extends StatelessWidget {
   // New factory method for gradient button
   static Widget gradientBtn({
     required String text,
-    required VoidCallback onPressed,
+    required void Function()? onPressed,
     double width = double.infinity,
     double height = 45,
     double fontSize = 14,

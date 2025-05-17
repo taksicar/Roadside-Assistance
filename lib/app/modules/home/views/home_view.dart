@@ -89,10 +89,10 @@ class HomeView extends GetView<HomeController> {
         height: 130.h,
         margin: EdgeInsets.symmetric(horizontal: 6.w),
         decoration: BoxDecoration(
-          image: DecorationImage(image:AssetImage(ImageAssets.service_bg)),
+          image: DecorationImage(image: AssetImage(ImageAssets.service_bg)),
+
           // color: ColorManager.secondary.withOpacity50,
           // color: ColorManager.white,
-          
           borderRadius: BorderRadius.circular(12.r),
           // boxShadow: [
           //   BoxShadow(
@@ -106,8 +106,8 @@ class HomeView extends GetView<HomeController> {
           children: [
             // Service icon
             Container(
-              padding: EdgeInsets.symmetric(vertical: 8.h,horizontal: 12.w),
-              child: SvgPicture.asset(icon, fit: BoxFit.contain,width: 150.w,),
+              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
+              child: SvgPicture.asset(icon, fit: BoxFit.contain, width: 150.w),
             ),
             Spacer(),
             // Title and status
@@ -137,14 +137,22 @@ class HomeView extends GetView<HomeController> {
                     InkWell(
                       onTap: () => Get.toNamed(Routes.MAP),
                       child: Transform.translate(
-                        offset: Offset(0, 22.h),
+                        offset: Offset(-10.w, 25.h),
                         child: Container(
                           // margin: EdgeInsets.only(top: 40.h),
                           padding: EdgeInsets.symmetric(
-                            horizontal: 40.w,
+                            horizontal: 45.w,
                             vertical: 15.h,
                           ),
                           decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF5C4DB1), // بداية التدرج (بنفسجي غامق)
+                                Color(0xFF2E2D70), // نهاية التدرج (بنفسجي فاتح)
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
                             color: ColorManager.primaryDark,
                             borderRadius: BorderRadius.circular(12.r),
                           ),

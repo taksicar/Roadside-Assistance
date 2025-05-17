@@ -19,13 +19,18 @@ class LocationSelectionWidget extends GetView<MapController> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        // // Header Text - instruction for user
+        // _buildHeaderText(),
+
+        SizedBox(height: 8.h),
+
         // Search bar
         _buildSearchBar(),
 
         SizedBox(height: 8.h),
 
-        // Location selection tabs and search results
-        // _buildLocationSelectionTabs(),
+        // Search results (visible only when there are results)
+        // _buildSearchResults(),
 
         SizedBox(height: 16.h),
 
@@ -41,6 +46,25 @@ class LocationSelectionWidget extends GetView<MapController> {
       ],
     );
   }
+
+  // Widget _buildHeaderText() {
+  //   return Container(
+  //     width: double.infinity,
+  //     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+  //     color: Colors.black.withOpacity(0.6),
+  //     child: Text(
+  //       isPickup
+  //           ? 'حرك الخريطة لاختيار نقطة الانطلاق'
+  //           : 'حرك الخريطة لاختيار نقطة الوصول',
+  //       style: TextStyle(
+  //         color: Colors.white,
+  //         fontSize: 14.sp,
+  //         fontWeight: FontWeight.bold,
+  //       ),
+  //       textAlign: TextAlign.center,
+  //     ),
+  //   );
+  // }
 
   Widget _buildSearchBar() {
     return Container(
@@ -72,6 +96,9 @@ class LocationSelectionWidget extends GetView<MapController> {
 
                     controller.updatePickupMarker(controller.currentLocation.value!);
                     controller.searchController.clear();
+
+                    // Move map to the current location
+                    controller.moveMapToLocation(controller.currentLocation.value!);
                   }
                 },
                 child: Container(
@@ -122,111 +149,59 @@ class LocationSelectionWidget extends GetView<MapController> {
     );
   }
 
-  Widget _buildLocationSelectionTabs() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Pickup/Destination Tabs
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
-            child: Row(
-              children: [
-                // Destination tab
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => controller.toggleLocationSelection(false),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 10.h),
-                      decoration: BoxDecoration(
-                        color: !isPickup ? ColorManager.primary.withOpacity(0.15) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        'نقطة الوصول',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: !isPickup ? ColorManager.primary : Colors.grey,
-                          fontWeight: !isPickup ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                // Pickup tab
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => controller.toggleLocationSelection(true),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 10.h),
-                      decoration: BoxDecoration(
-                        color: isPickup ? ColorManager.primary.withOpacity(0.15) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        'نقطة الانطلاق',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isPickup ? ColorManager.primary : Colors.grey,
-                          fontWeight: isPickup ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildSearchResults() {
+    return Obx(() {
+      if (controller.searchResults.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          ),
-
-          Divider(height: 1),
-
-          // Search results list
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: controller.searchResults.length,
-            itemBuilder: (context, index) {
-              final location = controller.searchResults[index];
-              return ListTile(
-                leading: Icon(
-                  isPickup ? Icons.location_on_outlined : Icons.search,
+          ],
+        ),
+        child: ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.searchResults.length,
+          separatorBuilder: (context, index) => const Divider(height: 1),
+          itemBuilder: (context, index) {
+            final location = controller.searchResults[index];
+            return ListTile(
+              leading: Icon(
+                isPickup ? Icons.location_on_outlined : Icons.search,
+                color: isPickup ? ColorManager.secondary : Colors.purple,
+              ),
+              title: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  location,
+                  style: TextStyle(fontSize: 14.sp, color: Colors.black87),
+                  textAlign: TextAlign.right,
+                ),
+              ),
+              trailing: Container(
+                width: 10.w,
+                height: 10.h,
+                decoration: BoxDecoration(
                   color: isPickup ? ColorManager.secondary : Colors.purple,
+                  shape: BoxShape.circle,
                 ),
-                title: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    location,
-                    style: TextStyle(fontSize: 14.sp, color: Colors.black87),
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-                trailing: Container(
-                  width: 10.w,
-                  height: 10.h,
-                  decoration: BoxDecoration(
-                    color: isPickup ? ColorManager.secondary : Colors.purple,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                onTap: () => controller.searchLocation(location),
-              );
-            },
-          ),
-        ],
-      ),
-    );
+              ),
+              onTap: () => controller.searchLocation(location),
+            );
+          },
+        ),
+      );
+    });
   }
 
   Widget _buildConfirmButton() {
@@ -234,8 +209,19 @@ class LocationSelectionWidget extends GetView<MapController> {
       padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
       child: CustomButton.gradientBtn(
         text: isPickup ? 'تثبيت الانطلاق' : 'تثبيت الوصول',
-        // color: ColorManager.primary,
-        onPressed: () => controller.confirmLocation(),
+        onPressed: () {
+          // First make sure we save the current map center as the location
+          if (controller.mapCenter.value != null) {
+            if (isPickup) {
+              controller.pickupLocation.value = controller.mapCenter.value;
+            } else {
+              controller.destination.value = controller.mapCenter.value;
+            }
+            controller.getLocationNameFromCenter();
+          }
+          // Then confirm the location
+          controller.confirmLocation();
+        },
       ),
     );
   }

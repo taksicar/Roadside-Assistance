@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as l;
@@ -27,13 +28,11 @@ enum ServiceType {
 }
 
 class MapController extends GetxController {
-
-   Completer<GoogleMapController> mapControllerCompleter = Completer<GoogleMapController>();
+  Completer<GoogleMapController> mapControllerCompleter = Completer<GoogleMapController>();
   final Rx<CameraPosition> initialCameraPosition = CameraPosition(
     target: LatLng(33.3152, 44.3661),
     zoom: 18.0,
   ).obs;
-
 
   final markers = <Marker>{}.obs;
   final polylines = <Polyline>{}.obs;
@@ -42,43 +41,81 @@ class MapController extends GetxController {
   late BitmapDescriptor driverIcon;
   final _markersLoaded = false.obs;
 
+  // Central marker animation control
+  final isCameraMoving = false.obs;
+  final centerMarkerHeight = 0.0.obs; // For animation
+
+  // Animation controller for smoother lifting effect
+  // void onCameraMove(CameraPosition position) {
+  //   mapCenter.value = position.target;
+  //
+  //   // Start the marker "lift" animation if not already moving
+  //   if (!isCameraMoving.value) {
+  //     isCameraMoving.value = true;
+  //     // Animate the marker to "lift up" while moving - between 20-30 pixels is a good range
+  //     centerMarkerHeight.value = 25.0;
+  //   }
+  // }
+
+
+
+
+
+  // When camera stops moving
+  // void onCameraIdle() {
+  //   if (isCameraMoving.value) {
+  //     // Trigger marker "drop" animation
+  //     isCameraMoving.value = false;
+  //
+  //     // Animate the drop with a sequence for more realistic effect
+  //     Future.delayed(const Duration(milliseconds: 50), () {
+  //       centerMarkerHeight.value = 5.0; // Quick drop to low position
+  //
+  //       Future.delayed(const Duration(milliseconds: 100), () {
+  //         centerMarkerHeight.value = 10.0; // Small bounce back
+  //
+  //         Future.delayed(const Duration(milliseconds: 100), () {
+  //           centerMarkerHeight.value = 0.0; // Final settle
+  //
+  //           // Update location based on map center
+  //           getLocationNameFromCenter();
+  //         });
+  //       });
+  //     });
+  //   }
+  // }
+
+
+
 
   final double markerSize = 100.0;
   final double iconSize = 50.0;
-
 
   final currentLocation = Rxn<LatLng>();
   final pickupLocation = Rxn<LatLng>();
   final destination = Rxn<LatLng>();
 
+  // Current map center (used for location selection)
+  final mapCenter = Rxn<LatLng>();
 
   final tripStatus = TripStatus.selectingLocation.obs;
-
-
   final selectedServiceType = Rx<ServiceType?>(null);
-
-
   final location = l.Location();
-
 
   final searchController = TextEditingController();
   final pickupLocationText = ''.obs;
   final destinationText = ''.obs;
   final isPickUpSelected = true.obs;
 
-
   final driverName = 'احمد محمود'.obs;
   final driverArrivalTime = '10 دقائق'.obs;
   final driverImage = 'assets/images/driver.jpg'.obs;
 
-
   final heavyServicePrice = '50 دولار'.obs;
   final lightServicePrice = '40 دولار'.obs;
 
-
   final isMapReady = false.obs;
   final isLocationLoading = false.obs;
-
 
   final searchResults = <String>['بغداد-حي الدراغ - ساحة الفارس', 'بغداد, الكرادة', 'بغداد, زيونة'].obs;
 
@@ -90,7 +127,6 @@ class MapController extends GetxController {
       _setupLocationService();
     });
 
-
     searchController.addListener(_onSearchTextChanged);
   }
 
@@ -100,7 +136,6 @@ class MapController extends GetxController {
     searchController.dispose();
     super.onClose();
   }
-
 
   void _onSearchTextChanged() {
     if (searchController.text.isEmpty) {
@@ -135,29 +170,22 @@ class MapController extends GetxController {
     }
   }
 
-
   Future<void> customMarker() async {
     try {
-
       final ImageConfiguration largeConfig = ImageConfiguration(
         size: Size(markerSize, markerSize),
         devicePixelRatio: 3.0,
       );
 
-
       final Uint8List pickupIconBytes = await getBytesFromAsset(ImageAssets.LocationSign, markerSize.toInt());
       pickupIcon = BitmapDescriptor.fromBytes(pickupIconBytes);
-
 
       final Uint8List destinationIconBytes = await getBytesFromAsset(ImageAssets.locationLogo, markerSize.toInt());
       destinationIcon = BitmapDescriptor.fromBytes(destinationIconBytes);
 
-
-
       driverIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
 
       _markersLoaded.value = true;
-
 
       if (currentLocation.value != null) {
         _updateCurrentLocationMarker();
@@ -180,7 +208,6 @@ class MapController extends GetxController {
     }
   }
 
-
   Future<void> _setupLocationService() async {
     isLocationLoading.value = true;
 
@@ -199,12 +226,11 @@ class MapController extends GetxController {
     _permissionGranted = await location.hasPermission();
     if (_permissionGranted == l.PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != l.PermissionStatus .granted) {
+      if (_permissionGranted != l.PermissionStatus.granted) {
         isLocationLoading.value = false;
         return;
       }
     }
-
 
     try {
       final locationData = await location.getLocation();
@@ -213,28 +239,23 @@ class MapController extends GetxController {
         locationData.longitude!,
       );
 
-
       currentLocation.value = initialLocation;
-
-
+      // Set map center initially
+      mapCenter.value = initialLocation;
 
       pickupLocation.value = LatLng(initialLocation.latitude, initialLocation.longitude);
       pickupLocationText.value = 'موقعي الحالي';
-
 
       initialCameraPosition.value = CameraPosition(
         target: initialLocation,
         zoom: 15.0,
       );
 
-
       _addMarkerForCurrentLocation();
-
 
       if (_markersLoaded.value) {
         updatePickupMarker(pickupLocation.value!);
       }
-
 
       location.onLocationChanged.listen((l.LocationData newLocation) {
         LatLng newLatLng = LatLng(
@@ -242,18 +263,14 @@ class MapController extends GetxController {
           newLocation.longitude!,
         );
 
-
         currentLocation.value = newLatLng;
         _updateCurrentLocationMarker();
 
-
         if (pickupLocationText.value == 'موقعي الحالي') {
-
           pickupLocation.value = LatLng(newLatLng.latitude, newLatLng.longitude);
           if (_markersLoaded.value) {
             updatePickupMarker(pickupLocation.value!);
           }
-
 
           if (destination.value != null &&
               (tripStatus.value == TripStatus.selectingDestination ||
@@ -269,7 +286,6 @@ class MapController extends GetxController {
     }
   }
 
-
   void _addMarkerForCurrentLocation() {
     if (currentLocation.value == null || !_markersLoaded.value) return;
 
@@ -281,22 +297,16 @@ class MapController extends GetxController {
         alpha: 0.7,
         infoWindow: const InfoWindow(title: 'موقعي الحالي'),
         zIndex: 1,
-
       ),
     );
   }
 
-
   void _updateCurrentLocationMarker() {
     if (currentLocation.value == null || !_markersLoaded.value) return;
 
-
     markers.removeWhere((marker) => marker.markerId.value == 'current_location');
-
-
     _addMarkerForCurrentLocation();
   }
-
 
   Future<void> goToCurrentLocation() async {
     if (currentLocation.value == null) return;
@@ -306,17 +316,15 @@ class MapController extends GetxController {
       CameraUpdate.newLatLngZoom(currentLocation.value!, 18),
     );
 
-
     if (tripStatus.value == TripStatus.selectingLocation) {
-
       LatLng locationCopy = LatLng(
           currentLocation.value!.latitude,
           currentLocation.value!.longitude
       );
 
       pickupLocation.value = locationCopy;
+      mapCenter.value = locationCopy;
       pickupLocationText.value = 'موقعي الحالي';
-
 
       if (_markersLoaded.value) {
         updatePickupMarker(locationCopy);
@@ -324,56 +332,20 @@ class MapController extends GetxController {
     }
   }
 
-  // Future<void> searchLocation(String query) async {
-  //   try {
-  //     // البحث عن المكان باستخدام Geocoding
-  //     List<Location> locations = await locationFromAddress(query);
-  //
-  //     if (locations.isNotEmpty) {
-  //       // الحصول على الموقع الأول من النتائج
-  //       Location location = locations.first;
-  //       LatLng position = LatLng(location.latitude, location.longitude);
-  //
-  //       // تحديث الموقع المختار (انطلاق أو وصول)
-  //       if (isPickUpSelected.value) {
-  //         pickupLocation.value = position;
-  //         pickupLocationText.value = query; // استخدام نص البحث كاسم للمكان
-  //         updatePickupMarker(position);
-  //       } else {
-  //         destination.value = position;
-  //         destinationText.value = query; // استخدام نص البحث كاسم للمكان
-  //         updateDestinationMarker(position);
-  //       }
-  //
-  //       // تحريك الخريطة إلى الموقع المختار
-  //       moveMapToLocation(position);
-  //
-  //       // رسم المسار إذا تم تحديد نقطتي الانطلاق والوصول
-  //       if (pickupLocation.value != null && destination.value != null) {
-  //         drawRouteBetweenPickupAndDestination();
-  //       }
-  //
-  //       // مسح نتائج البحث
-  //       searchResults.clear();
-  //       searchController.clear();
-  //     }
-  //   } catch (e) {
-  //     print('خطأ في البحث عن المكان: $e');
-  //   }
-  // }
-
   Future<void> searchLocation(String query) async {
     // Show loading indicator
     isLocationLoading.value = true;
 
     try {
       // Use Google Places API for more comprehensive results
-      // This is a placeholder - you'd need to implement the Places API
       List<Location> locations = await locationFromAddress(query);
 
       if (locations.isNotEmpty) {
         Location location = locations.first;
         LatLng position = LatLng(location.latitude, location.longitude);
+
+        // Update the map center
+        mapCenter.value = position;
 
         // Update the selected location (pickup or destination)
         if (isPickUpSelected.value) {
@@ -417,6 +389,7 @@ class MapController extends GetxController {
       isLocationLoading.value = false;
     }
   }
+
   Future<void> moveMapToLocation(LatLng position) async {
     print('بدء محاولة تحريك الخريطة إلى: ${position.latitude}, ${position.longitude}');
 
@@ -451,6 +424,9 @@ class MapController extends GetxController {
           return;
         }
       }
+
+      // Update map center
+      mapCenter.value = position;
 
       // استراتيجية بديلة: تحديث موقع الكاميرا الأولي
       print('تحديث موقع الكاميرا الأولية');
@@ -493,15 +469,6 @@ class MapController extends GetxController {
 
       print('تم تحريك الخريطة بنجاح!');
 
-      // إظهار إشعار نجاح
-      Get.snackbar(
-        'تم',
-        'تم تحريك الخريطة بنجاح',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.7),
-        colorText: Colors.white,
-      );
-
     } catch (e) {
       print('خطأ أثناء تحريك الخريطة: $e');
 
@@ -524,7 +491,7 @@ class MapController extends GetxController {
     }
   }
 
-// دالة مساعدة لإعادة تهيئة الخريطة
+  // دالة مساعدة لإعادة تهيئة الخريطة
   Future<void> _reinitializeMap() async {
     try {
       // إذا كان المتحكم مكتملاً، أغلق المتحكم القديم أولاً
@@ -555,7 +522,7 @@ class MapController extends GetxController {
     }
   }
 
-// دالة مساعدة لإعادة إنشاء الخريطة بالكامل
+  // دالة مساعدة لإعادة إنشاء الخريطة بالكامل
   Future<void> _recreateMap(LatLng targetPosition) async {
     try {
       // تحديث الموقع الأولي للكاميرا
@@ -563,6 +530,9 @@ class MapController extends GetxController {
         target: targetPosition,
         zoom: 16.0,
       );
+
+      // Update map center
+      mapCenter.value = targetPosition;
 
       // إعادة تحميل الصفحة
       Get.offAndToNamed(Routes.MAP);
@@ -573,9 +543,39 @@ class MapController extends GetxController {
       throw e;
     }
   }
+
+  // Function to create bitmap descriptor from SVG asset
+  Future<BitmapDescriptor> getBitmapDescriptorFromSvgAsset(
+      String assetName,
+      BuildContext context,
+      {double width = 48, double height = 48}
+      ) async {
+    // Create a PictureInfo from the SVG asset
+    final pictureInfo = await vg.loadPicture(SvgAssetLoader(assetName), null);
+
+    // Convert to an Image
+    final image = await pictureInfo.picture.toImage(
+      width.toInt(),
+      height.toInt(),
+    );
+
+    // Convert to ByteData
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+
+    // Create a BitmapDescriptor
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+  }
+
   void updatePickupMarker(LatLng position) async {
+    // Don't show pickup marker during location selection
+    if (tripStatus.value == TripStatus.selectingLocation) {
+      return;
+    }
+
     String address = await getLocationAddress(position);
 
+    // Create a marker using the default marker with orange hue
+    // In a production app, you'd use the SVG converted to BitmapDescriptor here
     final marker = Marker(
       markerId: const MarkerId('pickup'),
       position: position,
@@ -583,19 +583,27 @@ class MapController extends GetxController {
         title: 'نقطة الانطلاق',
         snippet: address,
       ),
-      icon: pickupIcon,
+      icon:pickupIcon,
+      zIndex: 2, // Higher than regular markers but lower than driver
     );
 
     markers.removeWhere((m) => m.markerId.value == 'pickup');
     markers.add(marker);
 
-    // تحديث النص في الواجهة أيضًا إذا لم يتم ذلك بالفعل
+    // Update the text in UI if needed
     pickupLocationText.value = address;
   }
 
   void updateDestinationMarker(LatLng position) async {
+    // Don't show destination marker during location selection
+    if (tripStatus.value == TripStatus.selectingDestination) {
+      return;
+    }
+
     String address = await getLocationAddress(position);
 
+    // Create a marker using the default marker with violet hue
+    // In a production app, you'd use the SVG converted to BitmapDescriptor here
     final marker = Marker(
       markerId: const MarkerId('destination'),
       position: position,
@@ -603,24 +611,22 @@ class MapController extends GetxController {
         title: 'نقطة الوصول',
         snippet: address,
       ),
-      icon: destinationIcon,
+      icon:destinationIcon,
+      zIndex: 2, // Higher than regular markers but lower than driver
     );
 
     markers.removeWhere((m) => m.markerId.value == 'destination');
     markers.add(marker);
 
-    // تحديث النص في الواجهة أيضًا إذا لم يتم ذلك بالفعل
+    // Update the text in UI if needed
     destinationText.value = address;
   }
+
   void toggleLocationSelection(bool isPickup) {
     isPickUpSelected.value = isPickup;
-
-
     searchController.clear();
 
-
-
-    if (isPickup && pickupLocationText.value.isEmpty && currentLocation.value != null) {
+    if (isPickup && pickupLocationText.isEmpty && currentLocation.value != null) {
       pickupLocation.value = currentLocation.value;
       pickupLocationText.value = 'موقعي الحالي';
       if (_markersLoaded.value) {
@@ -630,11 +636,35 @@ class MapController extends GetxController {
   }
 
 
+  // Get address for the current map center
+  Future<void> getLocationNameFromCenter() async {
+    if (mapCenter.value == null) return;
+
+    String address = await getLocationAddress(mapCenter.value!);
+
+    // Update the appropriate location text based on selection
+    if (isPickUpSelected.value) {
+      pickupLocation.value = mapCenter.value;
+      pickupLocationText.value = address;
+      if (_markersLoaded.value) {
+        updatePickupMarker(mapCenter.value!);
+      }
+    } else {
+      destination.value = mapCenter.value;
+      destinationText.value = address;
+      if (_markersLoaded.value) {
+        updateDestinationMarker(mapCenter.value!);
+      }
+    }
+  }
+
   void confirmLocation() {
     if (tripStatus.value == TripStatus.selectingLocation) {
-
-      if (pickupLocation.value == null) {
-
+      // Use map center as the pickup point
+      if (mapCenter.value != null) {
+        pickupLocation.value = mapCenter.value;
+        getLocationNameFromCenter(); // Update address display
+      } else if (currentLocation.value != null) {
         pickupLocation.value = currentLocation.value;
         pickupLocationText.value = 'موقعي الحالي';
         if (_markersLoaded.value) {
@@ -642,80 +672,63 @@ class MapController extends GetxController {
         }
       }
 
-
       tripStatus.value = TripStatus.selectingDestination;
       isPickUpSelected.value = false;
 
     } else if (tripStatus.value == TripStatus.selectingDestination) {
-
-      if (destination.value == null) {
-
-
+      // Use map center as the destination point
+      if (mapCenter.value != null) {
+        destination.value = mapCenter.value;
+        getLocationNameFromCenter(); // Update address display
+      } else {
+        // Can't proceed without a destination
         return;
       }
 
-
       tripStatus.value = TripStatus.selectingServiceType;
-
-
       drawRouteBetweenPickupAndDestination();
     }
   }
 
 
-  void setSelectedServiceType(ServiceType type) {
-    selectedServiceType.value = type;
-  }
+  // void confirmServiceType() {
+  //   if (selectedServiceType.value == null) {
+  //     selectedServiceType.value = ServiceType.heavy;
+  //   }
+  //
+  //   tripStatus.value = TripStatus.searchingDriver;
+  //
+  //   Future.delayed(const Duration(seconds: 3), () {
+  //     tripStatus.value = TripStatus.driverOnTheWay;
+  //     drawDriverRoute();
+  //   });
+  // }
 
-
-  void confirmServiceType() {
-
-    if (selectedServiceType.value == null) {
-      selectedServiceType.value = ServiceType.heavy;
-    }
-
-
-    tripStatus.value = TripStatus.searchingDriver;
-
-
-    Future.delayed(const Duration(seconds: 3), () {
-      tripStatus.value = TripStatus.driverOnTheWay;
-      drawDriverRoute();
-    });
-  }
-
-
-  void drawRouteBetweenPickupAndDestination() {
-    if (pickupLocation.value == null || destination.value == null) return;
-
-
-    polylines.clear();
-
-
-    polylines.add(
-      Polyline(
-        polylineId: const PolylineId('route'),
-        color: ColorManager.primary,
-        width: 5,
-        points: [
-          pickupLocation.value!,
-          destination.value!,
-        ],
-        // patterns: [PatternItem.dash(15), PatternItem.gap(5)],
-      ),
-    );
-
-
-    fitMapToShowRoute();
-  }
-
+  // void drawRouteBetweenPickupAndDestination() {
+  //   if (pickupLocation.value == null || destination.value == null) return;
+  //
+  //   polylines.clear();
+  //
+  //   polylines.add(
+  //     Polyline(
+  //       polylineId: const PolylineId('route'),
+  //       color: ColorManager.primary,
+  //       width: 5,
+  //       points: [
+  //         pickupLocation.value!,
+  //         destination.value!,
+  //       ],
+  //     ),
+  //   );
+  //
+  //   fitMapToShowRoute();
+  // }
 
   Future<void> fitMapToShowRoute() async {
     if (pickupLocation.value == null || destination.value == null) return;
     if (!mapControllerCompleter.isCompleted) return;
 
     final GoogleMapController controller = await mapControllerCompleter.future;
-
 
     final double minLat = pickupLocation.value!.latitude < destination.value!.latitude
         ? pickupLocation.value!.latitude
@@ -729,7 +742,6 @@ class MapController extends GetxController {
     final double maxLng = pickupLocation.value!.longitude > destination.value!.longitude
         ? pickupLocation.value!.longitude
         : destination.value!.longitude;
-
 
     final double latPadding = (maxLat - minLat) * 0.5;
     final double lngPadding = (maxLng - minLng) * 0.5;
@@ -745,19 +757,15 @@ class MapController extends GetxController {
     );
   }
 
-
   void drawDriverRoute() {
     if (pickupLocation.value == null || destination.value == null || !_markersLoaded.value) return;
-
 
     final driverLocation = LatLng(
       pickupLocation.value!.latitude - 0.005,
       pickupLocation.value!.longitude - 0.005,
     );
 
-
     markers.removeWhere((marker) => marker.markerId.value == 'driver');
-
 
     markers.add(
       Marker(
@@ -769,27 +777,21 @@ class MapController extends GetxController {
       ),
     );
 
-
     polylines.clear();
-
-
 
     List<LatLng> routePoints = [
       driverLocation,
-
       LatLng(
           (driverLocation.latitude + pickupLocation.value!.latitude) / 2 + 0.002,
           (driverLocation.longitude + pickupLocation.value!.longitude) / 2 - 0.003
       ),
       pickupLocation.value!,
-
       LatLng(
           (pickupLocation.value!.latitude + destination.value!.latitude) / 2 - 0.001,
           (pickupLocation.value!.longitude + destination.value!.longitude) / 2 + 0.002
       ),
       destination.value!,
     ];
-
 
     polylines.add(
       Polyline(
@@ -800,30 +802,23 @@ class MapController extends GetxController {
       ),
     );
 
-
     polylines.add(
       Polyline(
         polylineId: const PolylineId('pickup_to_destination'),
         color: ColorManager.primary,
         width: 5,
         points: routePoints.sublist(2, 5),
-        // patterns: [PatternItem.dash(15), PatternItem.gap(5)],
       ),
     );
 
-
     _fitMapToShowEntireRoute(routePoints);
-
-
     simulateDriverArrival();
   }
-
 
   Future<void> _fitMapToShowEntireRoute(List<LatLng> points) async {
     if (!mapControllerCompleter.isCompleted) return;
 
     final GoogleMapController controller = await mapControllerCompleter.future;
-
 
     double minLat = double.infinity;
     double maxLat = -double.infinity;
@@ -836,7 +831,6 @@ class MapController extends GetxController {
       if (point.longitude < minLng) minLng = point.longitude;
       if (point.longitude > maxLng) maxLng = point.longitude;
     }
-
 
     final double latPadding = (maxLat - minLat) * 0.3;
     final double lngPadding = (maxLng - minLng) * 0.3;
@@ -852,11 +846,9 @@ class MapController extends GetxController {
     );
   }
 
-
   void arrivedAtDestination() {
     tripStatus.value = TripStatus.arrived;
   }
-
 
   void simulateDriverArrival() {
     Future.delayed(const Duration(seconds: 10), () {
@@ -865,7 +857,6 @@ class MapController extends GetxController {
       }
     });
   }
-
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
@@ -878,7 +869,6 @@ class MapController extends GetxController {
     return byteData!.buffer.asUint8List();
   }
 
-
   Future<BitmapDescriptor> getCustomMarkerIcon(String assetPath, int size) async {
     final Uint8List markerIcon = await getBytesFromAsset(assetPath, size);
     return BitmapDescriptor.fromBytes(markerIcon);
@@ -887,8 +877,8 @@ class MapController extends GetxController {
   Future<String> getLocationAddress(LatLng position) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-          position.latitude,
-          position.longitude,
+        position.latitude,
+        position.longitude,
       );
 
       if (placemarks.isNotEmpty) {
@@ -931,77 +921,170 @@ class MapController extends GetxController {
     return 'موقع محدد على الخريطة';
   }
 
-  void onMapTap(LatLng position) {
-    // تحديث الموقع المحدد
-    if (isPickUpSelected.value) {
-      pickupLocation.value = position;
-      if (_markersLoaded.value) {
-        updatePickupMarker(position);
-      }
-    } else {
-      destination.value = position;
-      if (_markersLoaded.value) {
-        updateDestinationMarker(position);
-      }
+  // The onMapTap function is not needed anymore since we'll use center marker
+  // We'll use onCameraMove and onCameraIdle instead
+
+  // Update marker visibility based on trip status
+  void updateMarkerVisibility() {
+    // During location selection, we don't want to show markers on the map
+    // because we're using the center marker instead
+    if (tripStatus.value == TripStatus.selectingLocation ||
+        tripStatus.value == TripStatus.selectingDestination) {
+      // Remove all markers except driver and current location
+      markers.removeWhere((marker) =>
+      marker.markerId.value != 'driver' &&
+          marker.markerId.value != 'current_location'
+      );
+      return;
     }
 
-    // تحديث اسم الموقع في المربع النصي
-    updateLocationNameFromMap(position);
+    // For other trip statuses, we want to show appropriate markers
+    if (pickupLocation.value != null && tripStatus.value != TripStatus.selectingLocation) {
+      updatePickupMarker(pickupLocation.value!);
+    }
+
+    if (destination.value != null && tripStatus.value != TripStatus.selectingDestination) {
+      updateDestinationMarker(destination.value!);
+    }
+  }
+// Additions to MapController class - these methods need to be integrated into the existing controller
+
+// Inside the MapController class, add or modify these methods:
+
+// Prevent location changes after route is set
+  void onCameraMove(CameraPosition position) {
+    // Only update mapCenter if we're in location selection mode
+    if (tripStatus.value == TripStatus.selectingLocation ||
+        tripStatus.value == TripStatus.selectingDestination) {
+      mapCenter.value = position.target;
+
+      // Animate the marker only during selection phase
+      if (!isCameraMoving.value) {
+        isCameraMoving.value = true;
+        centerMarkerHeight.value = 25.0;
+      }
+    }
+    // Otherwise, don't update mapCenter to prevent location changes
   }
 
-  void updateLocationNameFromMap(LatLng position) async {
-    // عادة، يتم استخدام خدمة Geocoding للحصول على اسم الموقع من الإحداثيات
-    // ولكن سنقوم بمحاكاة ذلك هنا لأغراض العرض
+// When camera stops moving - only process in selection mode
+  void onCameraIdle() {
+    // Only process camera idle events during location selection
+    if ((tripStatus.value == TripStatus.selectingLocation ||
+        tripStatus.value == TripStatus.selectingDestination) &&
+        isCameraMoving.value) {
 
-    // حساب المسافة بين المواقع المعروفة والموقع المحدد لاختيار الأقرب
-    final knownLocations = {
-      'بغداد-حي الدراغ - ساحة الفارس': LatLng(33.3152, 44.3661),
-      'بغداد, الكرادة': LatLng(33.3052, 44.3961),
-      'بغداد, زيونة': LatLng(33.3252, 44.4061),
-      'موقعي الحالي': currentLocation.value ?? LatLng(33.3152, 44.3661),
+      isCameraMoving.value = false;
+
+      // Animation sequence
+      Future.delayed(const Duration(milliseconds: 50), () {
+        centerMarkerHeight.value = 5.0;
+
+        Future.delayed(const Duration(milliseconds: 100), () {
+          centerMarkerHeight.value = 10.0;
+
+          Future.delayed(const Duration(milliseconds: 100), () {
+            centerMarkerHeight.value = 0.0;
+
+            // Only update location if in selection mode
+            if (tripStatus.value == TripStatus.selectingLocation ||
+                tripStatus.value == TripStatus.selectingDestination) {
+              getLocationNameFromCenter();
+            }
+          });
+        });
+      });
+    }
+  }
+
+// Modify the setSelectedServiceType method
+  void setSelectedServiceType(ServiceType type) {
+    selectedServiceType.value = type;
+
+    // Update button text based on selection
+    // (This is now handled in the UI, but we could add additional logic here)
+  }
+
+// Enhanced confirmServiceType method with proper navigation
+  void confirmServiceType() {
+    if (selectedServiceType.value == null) {
+      // Default to heavy if none selected
+      selectedServiceType.value = ServiceType.heavy;
+    }
+
+    // Store the service data for next screen
+    final String serviceType = selectedServiceType.value == ServiceType.heavy ? 'ثقيل' : 'خفيف';
+    final double servicePrice = selectedServiceType.value == ServiceType.heavy ? 50.0 : 40.0;
+
+    // Change trip status to searching for driver
+    tripStatus.value = TripStatus.searchingDriver;
+
+    // Here we would pass the relevant data to the next screen
+    // This could be done via Get.toNamed with arguments
+    Map<String, dynamic> arguments = {
+      'pickupLocation': pickupLocation.value,
+      'destination': destination.value,
+      'serviceType': serviceType,
+      'price': servicePrice,
+      'pickupAddress': pickupLocationText.value,
+      'destinationAddress': destinationText.value,
     };
 
-    String closestLocation = 'موقع غير معروف';
-    double minDistance = double.infinity;
+    // Simulate a brief loading state
+    isLocationLoading.value = true;
 
-    knownLocations.forEach((name, loc) {
-      // حساب المسافة بين النقطتين (بشكل مبسط)
-      double distance = _calculateDistance(position, loc);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestLocation = name;
-      }
+    Future.delayed(const Duration(seconds: 2), () {
+      isLocationLoading.value = false;
+      tripStatus.value = TripStatus.driverOnTheWay;
+      drawDriverRoute();
+
+      // Notification to user
+      Get.snackbar(
+        'جاري البحث عن سائق',
+        'تم تحديد $serviceType بسعر $servicePrice دولار',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: ColorManager.primary.withOpacity(0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
     });
-
-    // إذا كانت المسافة كبيرة جدًا، نعتبره موقعًا غير معروف مع الإحداثيات
-    if (minDistance > 0.01) { // حوالي 1 كم
-      closestLocation = 'موقع مخصص (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})';
-    }
-
-    // تحديث النص في المربع المناسب
-    if (isPickUpSelected.value) {
-      pickupLocationText.value = closestLocation;
-      pickupLocation.value = position;
-      if (_markersLoaded.value) {
-        updatePickupMarker(position);
-      }
-    } else {
-      destinationText.value = closestLocation;
-      destination.value = position;
-      if (_markersLoaded.value) {
-        updateDestinationMarker(position);
-      }
-    }
-
-    // إذا كان لدينا نقطة الانطلاق والوصول، نرسم المسار
-    if (pickupLocation.value != null && destination.value != null) {
-      drawRouteBetweenPickupAndDestination();
-    }
   }
 
-  double _calculateDistance(LatLng p1, LatLng p2) {
-    // حساب مبسط للمسافة الأقليدية بين نقطتين
-    return math.sqrt((p1.latitude - p2.latitude) * (p1.latitude - p2.latitude) +
-        (p1.longitude - p2.longitude) * (p1.longitude - p2.longitude));
+// Enhanced drawRouteBetweenPickupAndDestination with better visualization
+  void drawRouteBetweenPickupAndDestination() {
+    if (pickupLocation.value == null || destination.value == null) return;
+
+    polylines.clear();
+
+    // Calculate a midpoint with slight offset for a more natural curve
+    final midLat = (pickupLocation.value!.latitude + destination.value!.latitude) / 2;
+    final midLng = (pickupLocation.value!.longitude + destination.value!.longitude) / 2;
+
+    // Add a slight offset to create a curved effect
+    final latOffset = (destination.value!.latitude - pickupLocation.value!.latitude) * 0.15;
+    final lngOffset = (destination.value!.longitude - pickupLocation.value!.longitude) * 0.15;
+
+    // Create waypoints for a smoother route
+    final waypoint = LatLng(midLat + latOffset, midLng - lngOffset);
+
+    // Create a route with the waypoint for a curved effect
+    polylines.add(
+      Polyline(
+        polylineId: const PolylineId('route'),
+        color: ColorManager.primary,
+        width: 5,
+        points: [
+          pickupLocation.value!,
+          waypoint,
+          destination.value!,
+        ],
+      ),
+    );
+
+    // Add pickup and destination markers with proper icons
+    updatePickupMarker(pickupLocation.value!);
+    updateDestinationMarker(destination.value!);
+
+    fitMapToShowRoute();
   }
 }

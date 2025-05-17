@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:roadside_assistance/app/core/extentions/space_extention.dart';
 import 'package:roadside_assistance/app/core/utils/app_assets.dart';
 import 'package:roadside_assistance/app/core/utils/app_colors.dart';
 import 'package:roadside_assistance/app/core/widgets/custom_button_widget.dart';
@@ -15,13 +15,13 @@ class ServiceTypeWidget extends GetView<MapController> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // Trip route card - showing pickup and destination locations
+        // Location route card at top (non-editable)
         _buildRouteCard(),
 
         SizedBox(height: 16.h),
 
-        // Service type selection panel
-        _buildServiceTypePanel(),
+        // Service selection panel
+        _buildServicePanel(),
       ],
     );
   }
@@ -42,9 +42,9 @@ class ServiceTypeWidget extends GetView<MapController> {
       ),
       child: Column(
         children: [
-          // Origin point
+          // Pickup location
           Obx(() => ListTile(
-            leading: Icon(Icons.add, size: 20.sp, color: Colors.grey),
+            leading: Icon(Icons.location_on, size: 20.sp, color: ColorManager.primary),
             title: Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -61,16 +61,17 @@ class ServiceTypeWidget extends GetView<MapController> {
                 shape: BoxShape.circle,
               ),
             ),
-            onTap: () {
-              // Go back to editing pickup location
-              controller.tripStatus.value = TripStatus.selectingLocation;
-              controller.isPickUpSelected.value = true;
-            },
+            // Disable onTap - locations are now fixed
+            onTap: null,
+            dense: true,
           )),
 
-          // Destination point
+          // Divider
+          Divider(height: 1),
+
+          // Destination location
           Obx(() => ListTile(
-            leading: Icon(Icons.clear, size: 20.sp, color: Colors.grey),
+            leading: Icon(Icons.location_on, size: 20.sp, color: ColorManager.primary.withOpacity(0.7)),
             title: Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -87,81 +88,99 @@ class ServiceTypeWidget extends GetView<MapController> {
                 shape: BoxShape.circle,
               ),
             ),
-            onTap: () {
-              // Go back to editing destination location
-              controller.tripStatus.value = TripStatus.selectingDestination;
-              controller.isPickUpSelected.value = false;
-            },
+            // Disable onTap - locations are now fixed
+            onTap: null,
+            dense: true,
           )),
         ],
       ),
     );
   }
 
-  Widget _buildServiceTypePanel() {
-    return Obx(()=> Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(50.r),
-            topLeft: Radius.circular(50.r),
+  Widget _buildServicePanel() {
+    return Obx(() => Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(50.r),
+          topLeft: Radius.circular(50.r),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, -3),
           ),
-        ),
-        child: Column(
-          children: [
-            Divider(thickness: 3, indent: 130.w, endIndent: 130.w),
-            SizedBox(
-              width: double.infinity,
-              child: Column(
-                children: [
-                  // Heavy service option
-                  _buildServiceOption(
-                    isSelected: controller.selectedServiceType.value == ServiceType.heavy,
-                    title: 'ثقيل',
-                    subtitle: 'لنقل أوزان أكثر من 100 كيلو',
-                    price: '50دولار',
-                    imageAsset: ImageAssets.heavy,
-                    onTap: () => controller.setSelectedServiceType(ServiceType.heavy),
-                  ),
-
-                  SizedBox(height: 8.h),
-
-                  // Light service option
-                  _buildServiceOption(
-                    isSelected: controller.selectedServiceType.value == ServiceType.light,
-                    title: 'خفيف',
-                    subtitle: 'لنقل أوزان أقل من 100 كيلو',
-                    price: '40دولار',
-                    imageAsset: ImageAssets.light,
-                    onTap: () => controller.setSelectedServiceType(ServiceType.light),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 16.h),
-
-            // Confirm service button
-            Padding(
-              padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
-              child: CustomButton.gradientBtn(
-                text: controller.selectedServiceType.value == ServiceType.heavy
-                    ? 'نقل ثقيل \$50'
-                    : 'نقل خفيف \$40',
-                onPressed: () => controller.confirmServiceType(),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
-    );
+      child: Column(
+        children: [
+          // Handle indicator at top
+          Container(
+            margin: EdgeInsets.only(top: 8.h, bottom: 16.h),
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+          ),
+
+
+          SizedBox(height: 16.h),
+
+          // Service options
+          Column(
+            children: [
+              // Heavy transport option
+              _buildServiceOption(
+                isSelected: controller.selectedServiceType.value == ServiceType.heavy,
+                title: 'ثقيل',
+                subtitle: 'لنقل أوزان أكثر من 100 كيلو',
+                price: '50 دولار',
+                imageAsset: IconAssets.heavy,
+                onTap: () => controller.setSelectedServiceType(ServiceType.heavy),
+              ),
+
+              SizedBox(height: 12.h),
+
+              // Light transport option
+              _buildServiceOption(
+                isSelected: controller.selectedServiceType.value == ServiceType.light,
+                title: 'خفيف',
+                subtitle: 'لنقل أوزان أقل من 100 كيلو',
+                price: '40 دولار',
+                imageAsset: IconAssets.light,
+                onTap: () => controller.setSelectedServiceType(ServiceType.light),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 24.h),
+
+          // Confirm button with dynamic text
+          Padding(
+            padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+            child: CustomButton.gradientBtn(
+              text: controller.selectedServiceType.value == ServiceType.heavy
+                  ? 'نقل ثقيل \$50'
+                  : controller.selectedServiceType.value == ServiceType.light
+                  ? 'نقل خفيف \$40'
+                  : 'اختر نوع الخدمة',
+              onPressed: controller.selectedServiceType.value != null
+                  ? () => controller.confirmServiceType()
+                  : null, // Disable if no selection
+            ),
+          ),
+        ],
+      ),
+    ));
   }
 
-  // Service option item
   Widget _buildServiceOption({
-    required String title,
     required bool isSelected,
+    required String title,
     required String subtitle,
     required String price,
     required String imageAsset,
@@ -172,6 +191,10 @@ class ServiceTypeWidget extends GetView<MapController> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(
+          color: isSelected ? ColorManager.primary : Colors.grey.withOpacity(0.2),
+          width: isSelected ? 2.0 : 1.0,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -181,7 +204,7 @@ class ServiceTypeWidget extends GetView<MapController> {
         ],
       ),
       child: Material(
-        color: isSelected ? ColorManager.secondary.withOpacity(0.2) : Colors.transparent,
+        color: isSelected ? ColorManager.primary.withOpacity(0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(8.r),
         child: InkWell(
           onTap: onTap,
@@ -191,12 +214,13 @@ class ServiceTypeWidget extends GetView<MapController> {
             child: Row(
               children: [
                 // Service icon/image
-                Image.asset(
+                SvgPicture.asset(
                   imageAsset,
                   width: 70.w,
                   height: 70.h,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
+                    // Fallback icon if image fails to load
                     return Icon(
                       title == 'ثقيل' ? Icons.fire_truck : Icons.local_shipping,
                       size: 45.sp,
@@ -204,32 +228,37 @@ class ServiceTypeWidget extends GetView<MapController> {
                     );
                   },
                 ),
-                12.width,
+
+                SizedBox(width: 12.w),
 
                 // Service details
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey[700],
+                      SizedBox(height: 4.h),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[700],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
-                Spacer(),
+                SizedBox(width: 8.w),
 
                 // Price
                 Text(
@@ -240,6 +269,16 @@ class ServiceTypeWidget extends GetView<MapController> {
                     color: ColorManager.primary,
                   ),
                 ),
+
+                if (isSelected)
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: Icon(
+                      Icons.check_circle,
+                      color: ColorManager.primary,
+                      size: 24.sp,
+                    ),
+                  ),
               ],
             ),
           ),
