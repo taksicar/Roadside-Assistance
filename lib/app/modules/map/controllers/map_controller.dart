@@ -251,7 +251,7 @@ class MapController extends GetxController {
         zoom: 15.0,
       );
 
-      _addMarkerForCurrentLocation();
+      // _addMarkerForCurrentLocation();
 
       if (_markersLoaded.value) {
         updatePickupMarker(pickupLocation.value!);

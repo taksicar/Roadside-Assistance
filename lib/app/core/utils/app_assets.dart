@@ -17,6 +17,8 @@ class ImageAssets {
   static const String LocationSign = "$IMAGE_PATH/location_sign.png";
 
   static const String heavy = "$IMAGE_PATH/heavy.png";
+  static const String pin1 = "$IMAGE_PATH/pin1.png";
+  static const String pin2 = "$IMAGE_PATH/pin2.png";
   static const String light = "$IMAGE_PATH/light.png";
   static const String service_bg = "$IMAGE_PATH/service-bg.png";
 

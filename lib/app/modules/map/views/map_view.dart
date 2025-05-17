@@ -20,59 +20,52 @@ class MapView extends GetView<MapController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(
-            () {
-              if (controller.isLocationLoading.value) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: ColorManager.primary,
-                  ),
-                );
-              }
-              return Stack(
+      body: Obx(() {
+
+        return Stack(
           children: [
             // Google Map
             controller.tripStatus.value == TripStatus.searchingDriver
                 ? SizedBox()
                 : Obx(() {
-              if (controller.isLocationLoading.value) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: ColorManager.primary,
-                  ),
-                );
-              }
+                  if (controller.isLocationLoading.value) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: ColorManager.primary,
+                      ),
+                    );
+                  }
 
-              return Obx(
+                  return Obx(
                     () => GoogleMap(
-                  initialCameraPosition:
-                  controller.initialCameraPosition.value,
-                  markers: controller.markers,
-                  polylines: controller.polylines,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  mapToolbarEnabled: false,
-                  compassEnabled: false,
-                  onMapCreated: (GoogleMapController mapController) {
-                    if (!controller.mapControllerCompleter.isCompleted) {
-                      controller.mapControllerCompleter.complete(
-                        mapController,
-                      );
-                      controller.isMapReady.value = true;
-                      print('تم تهيئة الخريطة بنجاح!');
-                    }
-                  },
-                  // Add camera movement tracking for marker animation
-                  onCameraMove: controller.onCameraMove,
-                  onCameraIdle: controller.onCameraIdle,
-                  // Remove onTap handler as we'll use the center marker
-                ),
-              );
-            }),
+                      initialCameraPosition:
+                          controller.initialCameraPosition.value,
+                      markers: controller.markers,
+                      polylines: controller.polylines,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      compassEnabled: false,
+                      onMapCreated: (GoogleMapController mapController) {
+                        if (!controller.mapControllerCompleter.isCompleted) {
+                          controller.mapControllerCompleter.complete(
+                            mapController,
+                          );
+                          controller.isMapReady.value = true;
+                          print('تم تهيئة الخريطة بنجاح!');
+                        }
+                      },
+                      // Add camera movement tracking for marker animation
+                      onCameraMove: controller.onCameraMove,
+                      onCameraIdle: controller.onCameraIdle,
+                      // Remove onTap handler as we'll use the center marker
+                    ),
+                  );
+                }),
 
             // Center Marker (Fixed in the center of the screen)
-            _buildCenterMarker(),
+            controller.isLocationLoading.value ?  SizedBox():_buildCenterMarker() ,
 
             // Top Navigation
             _buildTopNavigation(),
@@ -99,8 +92,7 @@ class MapView extends GetView<MapController> {
             }),
           ],
         );
-            },
-      ),
+      }),
     );
   }
 
@@ -189,36 +181,36 @@ class MapView extends GetView<MapController> {
 
   Widget _buildCurrentLocationButton() {
     return (controller.tripStatus.value == TripStatus.selectingLocation ||
-        controller.tripStatus.value == TripStatus.selectingDestination ||
-        controller.tripStatus.value == TripStatus.selectingServiceType)
+            controller.tripStatus.value == TripStatus.selectingDestination ||
+            controller.tripStatus.value == TripStatus.selectingServiceType)
         ? Positioned(
-      bottom: 210.h,
-      right: 16.w,
-      child: Container(
-        decoration: BoxDecoration(
-          color: ColorManager.white,
-          border: Border.all(color: ColorManager.primary),
-          borderRadius: BorderRadius.all(Radius.circular(12.r)),
-          boxShadow: [
-            BoxShadow(
-              color: ColorManager.black.withOpacity(0.12),
-              offset: const Offset(0, 2),
-              blurRadius: 12,
-              spreadRadius: 1,
+          bottom: 210.h,
+          right: 16.w,
+          child: Container(
+            decoration: BoxDecoration(
+              color: ColorManager.white,
+              border: Border.all(color: ColorManager.primary),
+              borderRadius: BorderRadius.all(Radius.circular(12.r)),
+              boxShadow: [
+                BoxShadow(
+                  color: ColorManager.black.withOpacity(0.12),
+                  offset: const Offset(0, 2),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
-          ],
-        ),
-        child: IconButton(
-          icon: SvgPicture.asset(
-            IconAssets.myLocation,
-            height: 24.h,
-            width: 24.w,
-            color: Colors.indigo,
+            child: IconButton(
+              icon: SvgPicture.asset(
+                IconAssets.myLocation,
+                height: 24.h,
+                width: 24.w,
+                color: Colors.indigo,
+              ),
+              onPressed: controller.goToCurrentLocation,
+            ),
           ),
-          onPressed: controller.goToCurrentLocation,
-        ),
-      ),
-    )
+        )
         : SizedBox();
   }
 }

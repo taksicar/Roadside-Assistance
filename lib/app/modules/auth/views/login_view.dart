@@ -45,13 +45,13 @@ class LoginView extends GetView<AuthController> {
             ],
           ),
           Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(ImageAssets.background),
-
-                fit: BoxFit.fitWidth,
-              ),
-            ),
+            // decoration: BoxDecoration(
+            //   image: DecorationImage(
+            //     image: AssetImage(ImageAssets.background),
+            //
+            //     fit: BoxFit.fitWidth,
+            //   ),
+            // ),
             child: Center(
               // bottom: 0,
               child: Container(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:roadside_assistance/app/core/utils/app_assets.dart';
 import 'package:roadside_assistance/app/core/utils/app_colors.dart';
@@ -139,7 +138,7 @@ class ServiceTypeWidget extends GetView<MapController> {
                 title: 'ثقيل',
                 subtitle: 'لنقل أوزان أكثر من 100 كيلو',
                 price: '50 دولار',
-                imageAsset: IconAssets.heavy,
+                imageAsset: ImageAssets.heavy,
                 onTap: () => controller.setSelectedServiceType(ServiceType.heavy),
               ),
 
@@ -151,7 +150,7 @@ class ServiceTypeWidget extends GetView<MapController> {
                 title: 'خفيف',
                 subtitle: 'لنقل أوزان أقل من 100 كيلو',
                 price: '40 دولار',
-                imageAsset: IconAssets.light,
+                imageAsset: ImageAssets.light,
                 onTap: () => controller.setSelectedServiceType(ServiceType.light),
               ),
             ],
@@ -214,7 +213,7 @@ class ServiceTypeWidget extends GetView<MapController> {
             child: Row(
               children: [
                 // Service icon/image
-                SvgPicture.asset(
+                Image.asset(
                   imageAsset,
                   width: 70.w,
                   height: 70.h,
